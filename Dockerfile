@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
     python3-opencv \
     libgl1-mesa-glx \
     libglib2.0-0 \
+    build-essential \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
@@ -29,6 +30,11 @@ EXPOSE 5000
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 ENV FLASK_APP=api.py
+ENV PORT=5000
+ENV HOST=0.0.0.0
 
-# Run the application
-CMD ["python", "api.py"]
+# Install gunicorn
+RUN pip install gunicorn
+
+# Run the application with gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "api:app", "--workers", "4", "--timeout", "120"]
