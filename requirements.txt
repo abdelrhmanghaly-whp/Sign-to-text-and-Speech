@@ -1,0 +1,16 @@
+Flask==3.1.0
+flask-cors==5.0.1
+tensorflow==2.19.0
+keras==3.9.1
+opencv-python==4.8.0.76
+numpy==1.26.0
+pyttsx3==2.98
+pywin32==310
+comtypes==1.4.10
+pillow==11.1.0
+protobuf==5.29.4
+scikit-learn==1.6.1
+tensorboard==2.19.0
+tensorboard-data-server==0.7.2
+tensorflow-io-gcs-filesystem==0.31.0
+
