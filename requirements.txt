@@ -5,7 +5,7 @@ keras==3.9.1
 opencv-python==4.8.0.76
 numpy==1.26.0
 pyttsx3==2.98
-pywin32==310
+pywin32==310; platform_system=="Windows"
 comtypes==1.4.10
 pillow==11.1.0
 protobuf==5.29.4
