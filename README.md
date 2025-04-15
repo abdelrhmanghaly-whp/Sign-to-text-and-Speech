@@ -1,61 +1,168 @@
-# Sign Language to Text and Speech Converter
+# Sign Language Recognition API
 
-## Overview
-This application converts sign language gestures to text and speech using a deep learning model. It provides a Flask API that accepts images of sign language gestures and returns the corresponding text and audio output.
+## Prerequisites
 
-## Deployment Guide
+- Python 3.8 or higher
+- eSpeak (Text-to-Speech engine)
+  - Windows: Download and install from [eSpeak official website](http://espeak.sourceforge.net/download.html)
+  - Linux: `sudo apt-get install espeak`
+  - macOS: `brew install espeak`
 
-### Prerequisites
-1. A Render account
-2. A cloud storage account (Google Drive, AWS S3, or similar) to host the model file
-3. Docker installed locally for testing
-
-### Model Hosting
-1. Upload the `asl__model.h5` file to your preferred cloud storage service
-2. Get a direct download URL for the model file
-3. Make sure the URL is publicly accessible
-
-### Deployment Steps
-
-1. **Set up Environment Variables on Render**
-   - Create a new Web Service on Render
-   - Add the following environment variable:
-     - `MODEL_URL`: Your cloud storage URL for the model file
-
-2. **Deploy to Render**
-   - Connect your GitHub repository to Render
-   - Select the repository and branch
-   - Choose "Docker" as the environment
-   - Set the following:
-     - Name: Your service name
-     - Environment Variables: Add MODEL_URL
-     - Instance Type: Choose appropriate instance (minimum 512MB)
-
-3. **Verify Deployment**
-   - Once deployed, test the API endpoints:
-     - GET `/`: Check if the service is running
-     - POST `/predict`: Test single image prediction
-     - POST `/predict_sequence`: Test multiple image predictions
-     - POST `/predict_and_speak`: Test prediction with speech output
-
-## Local Development
+## Setup
 
 1. Clone the repository
-2. Create a `.env` file with your MODEL_URL
-3. Run with Docker:
+2. Download the pre-trained model:
+   - [Download asl_model.h5](https://drive.google.com/file/d/1gboxQCJ1FDzyzMWHkmjj6rid-BG88VtV/view?usp=sharing)
+   - Place the downloaded model file in the project root directory
+3. Install Python dependencies:
    ```bash
-   docker-compose up --build
+   pip install -r requirements.txt
    ```
+4. Make sure eSpeak is properly installed and accessible from your system's PATH
+
+## Running the API
+
+```bash
+# Start the API server
+python api.py
+```
+
+The server will start on `http://localhost:5000`
 
 ## API Endpoints
 
-- `GET /`: Service health check
-- `POST /predict`: Single image prediction
-- `POST /predict_sequence`: Multiple image predictions
-- `POST /predict_and_speak`: Predictions with speech output
-- `GET /audio/<filename>`: Get generated audio file
+### 1. Health Check - GET `/`
 
-## Notes
-- The model file is ~250MB and is downloaded during container build
-- Ensure your cloud storage URL is stable and publicly accessible
-- The temp_audio directory is used for temporary storage of generated speech files
+Verifies the API is running and returns available endpoints.
+
+**Response:**
+```json
+{
+    "status": "success",
+    "message": "Sign Language Recognition API is running",
+    "endpoints": {
+        "/predict": "POST - Send an image to get sign language prediction",
+        "/predict_sequence": "POST - Send multiple images to get a sequence of predictions",
+        "/predict_and_speak": "POST - Send multiple images to get a sequence of predictions and speech output"
+    }
+}
+```
+
+### 2. Single Prediction - POST `/predict`
+
+Predicts a single sign language gesture from an image.
+
+**Request Options:**
+
+1. Form Data:
+```http
+POST /predict
+Content-Type: multipart/form-data
+
+image: <image_file>
+```
+
+2. JSON:
+```http
+POST /predict
+Content-Type: application/json
+
+{
+    "image": "<base64_encoded_image>"
+}
+```
+
+**Response:**
+```json
+{
+    "status": "success",
+    "prediction": "A",
+    "confidence": 0.98,
+    "all_predictions": {
+        "A": 0.98,
+        "B": 0.01,
+        ...
+    }
+}
+```
+
+### 3. Sequence Prediction - POST `/predict_sequence`
+
+Predicts multiple signs from a sequence of images and combines them into a sentence.
+
+**Request Options:**
+
+1. Form Data:
+```http
+POST /predict_sequence
+Content-Type: multipart/form-data
+
+image1: <image_file>
+image2: <image_file>
+...
+```
+
+2. JSON:
+```http
+POST /predict_sequence
+Content-Type: application/json
+
+{
+    "images": [
+        "<base64_encoded_image1>",
+        "<base64_encoded_image2>",
+        ...
+    ]
+}
+```
+
+**Response:**
+```json
+{
+    "status": "success",
+    "individual_predictions": [
+        {
+            "prediction": "H",
+            "confidence": 0.95
+        },
+        {
+            "prediction": "I",
+            "confidence": 0.97
+        }
+    ],
+    "sentence": "HI"
+}
+```
+
+### 4. Predict and Speak - POST `/predict_and_speak`
+
+Predicts multiple signs from images, combines them into a sentence, and generates speech audio.
+
+**Request Options:**
+Same as `/predict_sequence`
+
+**Response:**
+```json
+{
+    "status": "success",
+    "individual_predictions": [
+        {
+            "prediction": "H",
+            "confidence": 0.95
+        },
+        {
+            "prediction": "I",
+            "confidence": 0.97
+        }
+    ],
+    "sentence": "HI",
+    "audio_url": "/audio/<uuid>.wav"
+}
+```
+
+### 5. Audio Retrieval - GET `/audio/<filename>`
+
+Retrieve the generated audio file for text-to-speech output.
+
+**Response:**
+Audio file in WAV format
