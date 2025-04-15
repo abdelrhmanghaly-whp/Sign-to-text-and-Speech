@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      args:
+        - MODEL_URL=${MODEL_URL}
+    ports:
+      - "5000:5000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./temp_audio:/app/temp_audio

@@ -9,11 +9,26 @@ import pyttsx3
 import tempfile
 import uuid
 import os.path
+import requests
+from dotenv import load_dotenv
+
+load_dotenv()
+
+MODEL_PATH = "asl__model.h5"
+MODEL_URL = os.getenv("MODEL_URL")
+
+if not os.path.exists(MODEL_PATH):
+    print(f"Downloading model from {MODEL_URL}...")
+    response = requests.get(MODEL_URL)
+    response.raise_for_status()
+    with open(MODEL_PATH, "wb") as f:
+        f.write(response.content)
+    print("Model downloaded successfully")
 
 print("Loading model...")
 tf.keras.backend.clear_session()
 
-model = tf.keras.models.load_model("asl__model.h5", compile=False)
+model = tf.keras.models.load_model(MODEL_PATH, compile=False)
 print("Model loaded successfully")
 
 print("Model ready for predictions")
