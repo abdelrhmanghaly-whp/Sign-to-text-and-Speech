@@ -3,12 +3,13 @@ FROM python:3.9-slim as builder
 
 WORKDIR /app
 
-# Install curl for downloading model
+# Install dependencies for downloading model
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first to leverage Docker cache
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install gdown
 
 # Copy application code
 COPY . .
@@ -16,9 +17,9 @@ COPY . .
 # Create directory for model and download it
 RUN mkdir -p /app/model
 
-# Download model during build (replace URL with your actual model URL)
+# Download model during build using gdown for Google Drive
 ARG MODEL_URL
-RUN curl -L ${MODEL_URL} -o /app/asl__model.h5
+RUN gdown ${MODEL_URL} -O /app/asl__model.h5
 
 # Stage 2: Runtime stage
 FROM python:3.9-slim
