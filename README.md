@@ -4,9 +4,9 @@
 
 - Python 3.8 or higher
 - eSpeak (Text-to-Speech engine)
-  - Windows: Download and install from [eSpeak official website](http://espeak.sourceforge.net/download.html)
-  - Linux: `sudo apt-get install espeak`
-  - macOS: `brew install espeak`
+  ```bash
+  pip install py-espeak-ng
+  ```
 
 ## Setup
 
